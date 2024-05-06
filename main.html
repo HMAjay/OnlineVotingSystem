@@ -1,0 +1,67 @@
+s<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting System</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Welcome to the Voting System</h1>
+</header>
+
+<section id="votingForm">
+    <h2>Enter Your EPIC ID and OTP</h2>
+    <form onsubmit="showCandidates(); return false;">
+        <label for="epic_id">EPIC ID:</label>
+        <input type="text" id="epic_id" name="epic_id" required><br><br>
+        <label for="otp">OTP:</label>
+        <input type="text" id="otp" name="otp" required><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</section>
+
+<section id="candidateSelection" class="hidden">
+    <h2>Choose Candidate</h2>
+    <form onsubmit="confirmVote(); return false;">
+        <label for="candidate">Choose Candidate:</label>
+        <select id="candidate" name="candidate" required>
+            <option value="Candidate X of Party A">Candidate X of Party A</option>
+            <option value="Candidate Y of Party B">Candidate Y of Party B</option>
+            <option value="Candidate Z of Party C">Candidate Z of Party C</option>
+        </select><br><br>
+        <input type="submit" value="Vote">
+    </form>
+</section>
+
+<section id="confirmation" class="hidden">
+    <h2>Thank You for Voting!</h2>
+    <p>Your vote for <span id="votedCandidate"></span> has been successfully cast.</p>
+</section>
+
+<footer>
+    <p>"The ballot is stronger than the bullet.".</p>
+</footer>
+
+<script>
+    function showCandidates() {
+        document.getElementById("candidateSelection").classList.remove("hidden");
+        document.getElementById("votingForm").classList.add("hidden");
+    }
+
+    function confirmVote() {
+        var candidate = document.getElementById("candidate").value;
+        document.getElementById("votedCandidate").innerText = candidate;
+        document.getElementById("confirmation").classList.remove("hidden");
+        document.getElementById("candidateSelection").classList.add("hidden");
+    }
+</script>
+
+</body>
+</html>
