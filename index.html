@@ -21,14 +21,9 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-
     section {
       background: white;
-      max-width: 400px;
+      max-width: 450px;
       margin: 2rem auto;
       padding: 2rem;
       border-radius: 10px;
@@ -66,7 +61,7 @@
       outline: none;
     }
 
-    input[type="submit"] {
+    input[type="submit"], button {
       width: 100%;
       padding: 0.7rem;
       background: #1cc88a;
@@ -78,14 +73,44 @@
       transition: background 0.3s;
     }
 
-    input[type="submit"]:hover {
+    input[type="submit"]:hover, button:hover {
       background: #17a673;
     }
 
-    #confirmation p {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #333;
+    .password-strength {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .strength-weak { color: red; }
+    .strength-medium { color: orange; }
+    .strength-strong { color: green; }
+
+    .toggle-password {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #2e59d9;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      display: inline-block;
+    }
+
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .progress-step {
+      flex: 1;
+      height: 6px;
+      margin: 0 3px;
+      background: #ccc;
+      border-radius: 4px;
+    }
+
+    .progress-step.active {
+      background: #1cc88a;
     }
 
     footer {
@@ -105,6 +130,28 @@
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      max-width: 300px;
+    }
+    .modal button {
+      margin: 0.5rem 0;
+    }
   </style>
 </head>
 <body>
@@ -113,59 +160,155 @@
   <h1>Welcome to the Voting System</h1>
 </header>
 
+<!-- Progress Bar -->
+<div class="progress-bar">
+  <div class="progress-step active" id="step1"></div>
+  <div class="progress-step" id="step2"></div>
+  <div class="progress-step" id="step3"></div>
+</div>
+
+<!-- Login -->
 <section id="votingForm">
   <h2>Login to Vote</h2>
   <form onsubmit="showCandidates(); return false;">
     <label for="epic_id">EPIC ID:</label>
-    <input type="text" id="epic_id" name="epic_id" placeholder="Enter your EPIC ID" required>
+    <input type="text" id="epic_id" placeholder="Enter your EPIC ID" required>
     
     <label for="password">Password:</label>
-    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    <input type="password" id="password" placeholder="Enter your password" required>
+    
+    <span class="toggle-password" onclick="togglePassword()">Show Password</span>
+    <div class="password-strength" id="strengthMessage"></div>
+    
+    <label><input type="checkbox" id="rememberMe"> Remember Me</label>
     
     <input type="submit" value="Login">
   </form>
 </section>
 
+<!-- Candidate Selection -->
 <section id="candidateSelection" class="hidden">
   <h2>Choose Candidate</h2>
-  <form onsubmit="confirmVote(); return false;">
+  <form onsubmit="openConfirmation(); return false;">
     <label for="candidate">Select Candidate:</label>
-    <select id="candidate" name="candidate" required>
-      <option value="Candidate X of Party A">Candidate X - Party A</option>
-      <option value="Candidate Y of Party B">Candidate Y - Party B</option>
-      <option value="Candidate Z of Party C">Candidate Z - Party C</option>
+    <select id="candidate" required>
+      <option value="Candidate X - Party A">Candidate X - Party A</option>
+      <option value="Candidate Y - Party B">Candidate Y - Party B</option>
+      <option value="Candidate Z - Party C">Candidate Z - Party C</option>
     </select>
     <input type="submit" value="Vote">
   </form>
+  <button onclick="logout()">Logout</button>
 </section>
 
+<!-- Confirmation -->
 <section id="confirmation" class="hidden">
   <h2>Thank You for Voting!</h2>
   <p>Your vote for <span id="votedCandidate"></span> has been successfully cast ✅</p>
+  <button onclick="logout()">Logout</button>
 </section>
+
+<!-- Modal for confirmation -->
+<div class="modal" id="voteModal">
+  <div class="modal-content">
+    <h3>Confirm Your Vote</h3>
+    <p>You are about to vote for <span id="modalCandidate"></span></p>
+    <button onclick="confirmVote()">Confirm</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
+</div>
 
 <footer>
   <p>"The ballot is stronger than the bullet."</p>
 </footer>
 
 <script>
+  // Password Strength Checker
+  document.getElementById("password").addEventListener("input", function() {
+    const val = this.value;
+    const strengthMsg = document.getElementById("strengthMessage");
+    let strength = "";
+    if(val.length < 4) {
+      strength = "Weak";
+      strengthMsg.className = "password-strength strength-weak";
+    } else if(val.match(/[0-9]/) && val.match(/[A-Z]/) && val.length >= 6) {
+      strength = "Strong";
+      strengthMsg.className = "password-strength strength-strong";
+    } else {
+      strength = "Medium";
+      strengthMsg.className = "password-strength strength-medium";
+    }
+    strengthMsg.textContent = strength ? `Password Strength: ${strength}` : "";
+  });
+
+  // Show/Hide Password
+  function togglePassword() {
+    const pass = document.getElementById("password");
+    if(pass.type === "password") {
+      pass.type = "text";
+      event.target.textContent = "Hide Password";
+    } else {
+      pass.type = "password";
+      event.target.textContent = "Show Password";
+    }
+  }
+
+  // Remember Me
+  window.onload = function() {
+    const savedEpic = localStorage.getItem("epic_id");
+    if(savedEpic) document.getElementById("epic_id").value = savedEpic;
+  }
+
   function showCandidates() {
     const epic = document.getElementById("epic_id").value.trim();
     const password = document.getElementById("password").value.trim();
 
     if(epic && password){
+      if(document.getElementById("rememberMe").checked){
+        localStorage.setItem("epic_id", epic);
+      }
       document.getElementById("candidateSelection").classList.remove("hidden");
       document.getElementById("votingForm").classList.add("hidden");
+
+      document.getElementById("step1").classList.remove("active");
+      document.getElementById("step2").classList.add("active");
     } else {
       alert("Please enter valid EPIC ID and Password.");
     }
   }
 
+  // Modal Open
+  function openConfirmation() {
+    const candidate = document.getElementById("candidate").value;
+    document.getElementById("modalCandidate").innerText = candidate;
+    document.getElementById("voteModal").style.display = "flex";
+  }
+
+  // Modal Close
+  function closeModal() {
+    document.getElementById("voteModal").style.display = "none";
+  }
+
+  // Confirm Vote
   function confirmVote() {
     var candidate = document.getElementById("candidate").value;
     document.getElementById("votedCandidate").innerText = candidate;
     document.getElementById("confirmation").classList.remove("hidden");
     document.getElementById("candidateSelection").classList.add("hidden");
+    document.getElementById("voteModal").style.display = "none";
+
+    document.getElementById("step2").classList.remove("active");
+    document.getElementById("step3").classList.add("active");
+  }
+
+  // Logout
+  function logout() {
+    document.getElementById("votingForm").classList.remove("hidden");
+    document.getElementById("candidateSelection").classList.add("hidden");
+    document.getElementById("confirmation").classList.add("hidden");
+
+    document.getElementById("step3").classList.remove("active");
+    document.getElementById("step1").classList.add("active");
   }
 </script>
 
