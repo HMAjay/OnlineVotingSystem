@@ -1,66 +1,172 @@
-s<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voting System</title>
-    <style>
-        .hidden {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voting System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4e73df, #1cc88a);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background: #2e59d9;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    section {
+      background: white;
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e59d9;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 0.5rem 0 0.2rem;
+    }
+
+    input[type="text"], 
+    input[type="password"], 
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: border 0.3s;
+    }
+
+    input[type="text"]:focus, 
+    input[type="password"]:focus, 
+    select:focus {
+      border: 1px solid #1cc88a;
+      outline: none;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 0.7rem;
+      background: #1cc88a;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background: #17a673;
+    }
+
+    #confirmation p {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #f8f9fc;
+      margin-top: 2rem;
+      font-style: italic;
+      color: #555;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
 <header>
-    <h1>Welcome to the Voting System</h1>
+  <h1>Welcome to the Voting System</h1>
 </header>
 
 <section id="votingForm">
-    <h2>Enter Your EPIC ID and OTP</h2>
-    <form onsubmit="showCandidates(); return false;">
-        <label for="epic_id">EPIC ID:</label>
-        <input type="text" id="epic_id" name="epic_id" required><br><br>
-        <label for="otp">OTP:</label>
-        <input type="text" id="otp" name="otp" required><br><br>
-        <input type="submit" value="Submit">
-    </form>
+  <h2>Login to Vote</h2>
+  <form onsubmit="showCandidates(); return false;">
+    <label for="epic_id">EPIC ID:</label>
+    <input type="text" id="epic_id" name="epic_id" placeholder="Enter your EPIC ID" required>
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    
+    <input type="submit" value="Login">
+  </form>
 </section>
 
 <section id="candidateSelection" class="hidden">
-    <h2>Choose Candidate</h2>
-    <form onsubmit="confirmVote(); return false;">
-        <label for="candidate">Choose Candidate:</label>
-        <select id="candidate" name="candidate" required>
-            <option value="Candidate X of Party A">Candidate X of Party A</option>
-            <option value="Candidate Y of Party B">Candidate Y of Party B</option>
-            <option value="Candidate Z of Party C">Candidate Z of Party C</option>
-        </select><br><br>
-        <input type="submit" value="Vote">
-    </form>
+  <h2>Choose Candidate</h2>
+  <form onsubmit="confirmVote(); return false;">
+    <label for="candidate">Select Candidate:</label>
+    <select id="candidate" name="candidate" required>
+      <option value="Candidate X of Party A">Candidate X - Party A</option>
+      <option value="Candidate Y of Party B">Candidate Y - Party B</option>
+      <option value="Candidate Z of Party C">Candidate Z - Party C</option>
+    </select>
+    <input type="submit" value="Vote">
+  </form>
 </section>
 
 <section id="confirmation" class="hidden">
-    <h2>Thank You for Voting!</h2>
-    <p>Your vote for <span id="votedCandidate"></span> has been successfully cast.</p>
+  <h2>Thank You for Voting!</h2>
+  <p>Your vote for <span id="votedCandidate"></span> has been successfully cast ✅</p>
 </section>
 
 <footer>
-    <p>"The ballot is stronger than the bullet.".</p>
+  <p>"The ballot is stronger than the bullet."</p>
 </footer>
 
 <script>
-    function showCandidates() {
-        document.getElementById("candidateSelection").classList.remove("hidden");
-        document.getElementById("votingForm").classList.add("hidden");
-    }
+  function showCandidates() {
+    const epic = document.getElementById("epic_id").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    function confirmVote() {
-        var candidate = document.getElementById("candidate").value;
-        document.getElementById("votedCandidate").innerText = candidate;
-        document.getElementById("confirmation").classList.remove("hidden");
-        document.getElementById("candidateSelection").classList.add("hidden");
+    if(epic && password){
+      document.getElementById("candidateSelection").classList.remove("hidden");
+      document.getElementById("votingForm").classList.add("hidden");
+    } else {
+      alert("Please enter valid EPIC ID and Password.");
     }
+  }
+
+  function confirmVote() {
+    var candidate = document.getElementById("candidate").value;
+    document.getElementById("votedCandidate").innerText = candidate;
+    document.getElementById("confirmation").classList.remove("hidden");
+    document.getElementById("candidateSelection").classList.add("hidden");
+  }
 </script>
 
 </body>
